@@ -1,1 +1,6 @@
 requests==2.11.1
+keystoneauth1==2.12.1
+cryptography==1.2.3
+oslo.utils==3.18.0
+oslo.serialization==2.14.0
+oslo.i18n==3.10.0
