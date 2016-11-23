@@ -30,7 +30,7 @@ from devicedemoclient import exceptions
 
 
 LOG = logging.getLogger(__name__)
-USER_AGENT = 'python-magnumclient'
+USER_AGENT = 'python-devicedemoclient'
 CHUNKSIZE = 1024 * 64  # 64kB
 
 API_VERSION = '/v1'
@@ -418,6 +418,6 @@ def _construct_http_client(*args, **kwargs):
                              service_type=service_type,
                              region_name=region_name,
                              service_name=None,
-                             user_agent='python-magnumclient')
+                             user_agent='python-devicedemoclient')
     else:
         return HTTPClient(*args, **kwargs)
