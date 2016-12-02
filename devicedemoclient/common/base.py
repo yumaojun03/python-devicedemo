@@ -22,6 +22,10 @@ Base utilities to build API operation managers and objects on top of.
 import copy
 
 import six.moves.urllib.parse as urlparse
+import logging
+
+
+LOG = logging.getLogger(__name__)
 
 from devicedemoclient.common.apiclient import base
 
@@ -124,7 +128,9 @@ class Manager(object):
             obj_class = self.resource_class
 
         data = self._format_body_data(body, response_key)
-        return [obj_class(self, res, loaded=True) for res in data if res]
+        data = list(data[0].values())[0]
+        objs = [obj_class(self, res, loaded=True) for res in data if data]
+        return objs
 
     def _update(self, url, body, method='PATCH', response_key=None):
         resp, body = self.api.json_request(method, url, body=body)

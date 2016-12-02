@@ -13,7 +13,7 @@
 #    under the License.
 
 from devicedemoclient.common.apiclient.exceptions import *  # noqa
-
+from devicedemoclient.common.apiclient import exceptions
 
 # NOTE(akurilin): This alias is left here since v.0.1.3 to support backwards
 # compatibility.
@@ -70,4 +70,4 @@ def from_response(response, message=None, traceback=None, method=None,
         # This is to work around that problem.
         response.text = ''
 
-    return from_response(response, method, url)
+    return exceptions.from_response(response, method, url)

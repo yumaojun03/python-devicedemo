@@ -40,6 +40,8 @@ DEFAULT_API_VERSION = 'latest'
 def _extract_error_json(body):
     """Return error_message from the HTTP response body."""
     error_json = {}
+    if six.PY3:
+        body = body.decode('utf8')
     try:
         body_json = json.loads(body)
         if 'error_message' in body_json:
@@ -313,15 +315,14 @@ class VerifiedHTTPSConnection(six.moves.http_client.HTTPSConnection):
 class SessionClient(adapter.LegacyJsonAdapter):
     """HTTP client based on Keystone client session."""
 
-    def __init__(self, user_agent=USER_AGENT, logger=LOG,
-                 api_version=DEFAULT_API_VERSION, *args, **kwargs):
+    def __init__(self, api_version=DEFAULT_API_VERSION, *args, **kwargs):
         self.user_agent = USER_AGENT
         self.api_version = api_version
         super(SessionClient, self).__init__(*args, **kwargs)
 
     def _http_request(self, url, method, **kwargs):
-        if url.startswith(API_VERSION):
-            url = url[len(API_VERSION):]
+        # if url.startswith(API_VERSION):
+        #     url = url[len(API_VERSION):]
 
         kwargs.setdefault('user_agent', self.user_agent)
         kwargs.setdefault('auth', self.auth)
@@ -342,6 +343,7 @@ class SessionClient(adapter.LegacyJsonAdapter):
 
         resp = self.session.request(url, method,
                                     raise_exc=False, **kwargs)
+        LOG.debug("The request url is: %s, the method is: %s, the kwargs: %s" % (url, method, kwargs))
 
         if 400 <= resp.status_code < 600:
             error_json = _extract_error_json(resp.content)

@@ -14,6 +14,11 @@ import prettytable
 import six
 from six import moves
 
+import logging
+
+
+LOG = logging.getLogger(__name__)
+
 from devicedemoclient.i18n import _
 
 
@@ -166,22 +171,24 @@ def print_list(objs, fields, formatters=None, sortby_index=0,
     pt = prettytable.PrettyTable(field_labels)
     pt.align = 'l'
 
-    for o in objs:
-        row = []
-        for field in fields:
-            data = '-'
-            if field in formatters:
-                data = formatters[field](o)
-            else:
-                if field in mixed_case_fields:
-                    field_name = field.replace(' ', '_')
-                else:
-                    field_name = field.lower().replace(' ', '_')
-                data = getattr(o, field_name, '')
-            if data is None:
+    LOG.debug(objs)
+    if objs is not None:
+        for o in objs:
+            row = []
+            for field in fields:
                 data = '-'
-            row.append(data)
-        pt.add_row(row)
+                if field in formatters:
+                    data = formatters[field](o)
+                else:
+                    if field in mixed_case_fields:
+                        field_name = field.replace(' ', '_')
+                    else:
+                        field_name = field.lower().replace(' ', '_')
+                    data = getattr(o, field_name, '')
+                if data is None:
+                    data = '-'
+                row.append(data)
+            pt.add_row(row)
 
     if six.PY3:
         print(encodeutils.safe_encode(pt.get_string(**kwargs)).decode())
