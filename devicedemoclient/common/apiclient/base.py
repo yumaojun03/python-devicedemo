@@ -44,8 +44,8 @@ from oslo_utils import strutils
 import six
 from six.moves.urllib import parse
 
-from magnumclient.common.apiclient import exceptions
-from magnumclient.i18n import _
+from devicedemoclient.common.apiclient import exceptions
+from devicedemoclient.i18n import _
 
 
 def getid(obj):
