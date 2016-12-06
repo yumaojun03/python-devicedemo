@@ -25,6 +25,10 @@ class Device(base.Resource):
     def __repr__(self):
         return "<Device %s>" % self._info
 
+    @property
+    def uuid(self):
+        return self._info['uuid']
+
 
 class DeviceManager(base.Manager):
     resource_class = Device
@@ -35,7 +39,7 @@ class DeviceManager(base.Manager):
 
     def get(self, device_uuid):
         try:
-            return self._list(self._path(device_uuid))[0]
+            return self._get(self._path(device_uuid))
         except IndexError:
             return None
 
@@ -81,19 +85,10 @@ class DeviceManager(base.Manager):
                                          limit=limit)
 
     def create(self, **kwargs):
-        new = {}
-        for (key, value) in kwargs.items():
-            if key in CREATION_ATTRIBUTES:
-                new[key] = value
-            elif key == 'bay_uuid':
-                new['cluster_uuid'] = value
-            else:
-                raise exceptions.InvalidAttribute(
-                    "Key must be in %s" % ",".join(CREATION_ATTRIBUTES))
-        return self._create(self._path(), new)
+        return self._create(self._path(), kwargs)
 
-    def delete(self):
-        pass
+    def delete(self, **kwargs):
+        return self._delete(self._path(kwargs['id']))
 
     def update(self):
         pass

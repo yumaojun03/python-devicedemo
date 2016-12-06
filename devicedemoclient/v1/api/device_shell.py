@@ -16,15 +16,17 @@ from devicedemoclient.common import cliutils as utils
 from devicedemoclient.common import utils as device_utils
 from devicedemoclient import exceptions
 from devicedemoclient.i18n import _
+from uuid import uuid4
 import logging
+
 
 
 LOG = logging.getLogger(__name__)
 
 
-def _show_cluster(cluster):
-    del cluster._info['links']
-    utils.print_dict(cluster._info)
+def _show_cluster(device):
+    # del cluster._info['links']
+    utils.print_dict(device._info)
 
 
 @utils.arg('--limit',
@@ -59,68 +61,55 @@ def do_device_list(cs, args):
                      sortby_index=None)
 
 
-@utils.arg('--uuid',
+@utils.arg('name',
            metavar='<name>',
-           help='Name of the cluster to create.')
-@utils.arg('--cluster-template',
-           required=True,
-           metavar='<cluster_template>',
-           help='ID or name of the cluster template.')
-@utils.arg('--node-count',
-           metavar='<node-count>',
-           type=int,
-           default=1,
-           help='The cluster node count.')
-@utils.arg('--master-count',
-           metavar='<master-count>',
-           type=int,
-           default=1,
-           help='The number of master nodes for the cluster.')
-@utils.arg('--discovery-url',
-           metavar='<discovery-url>',
-           help='Specifies custom discovery url for node discovery.')
+           help='Name of the device to create.')
+@utils.arg('--type',
+           metavar='<type>',
+           help='The device type.')
+@utils.arg('--vendor',
+           metavar='<vendor>',
+           help='The device vendor.')
+@utils.arg('--version',
+           metavar='<version>',
+           help='The device version.')
 @utils.arg('--timeout',
            metavar='<timeout>',
            type=int,
            default=60,
-           help='The timeout for cluster creation in minutes. The default '
+           help='The timeout for device creation in minutes. The default '
                 'is 60 minutes.')
 def do_device_create(cs, args):
     """Create a device."""
-    cluster_template = cs.cluster_templates.get(args.cluster_template)
-
     opts = {}
+    opts['uuid'] = str(uuid4())
     opts['name'] = args.name
-    opts['cluster_template_id'] = cluster_template.uuid
-    opts['node_count'] = args.node_count
-    opts['master_count'] = args.master_count
-    opts['discovery_url'] = args.discovery_url
-    opts['create_timeout'] = args.timeout
+    opts['type'] = args.type
+    opts['vendor'] = args.vendor
+    opts['version'] = args.version
+    # opts['create_timeout'] = args.timeout
     try:
-        cluster = cs.clusters.create(**opts)
-        # support for non-async in 1.1
-        if args.magnum_api_version and args.magnum_api_version == '1.1':
-            _show_cluster(cluster)
-        else:
-            fields = str(cluster).split("u'")
-            uuid = fields[2]
-            print("Request to create cluster %s has been accepted." % uuid[:3])
+        ret = cs.device.create(**opts)
+        error, data = ret['error'], ret['data']
+        if error is not None:
+            raise exceptions.ClientException(error)
+        LOG.debug("return device: %s" % ret)
+        print("Create device <%s> successful." % opts['uuid'])
     except Exception as e:
-        print("Create for cluster %s failed: %s" %
+        print("Create for device %s failed: %s" %
               (opts['name'], e))
 
 
-@utils.arg('cluster',
-           metavar='<cluster>',
+@utils.arg('uuid',
+           metavar='<uuid>',
            nargs='+',
-           help='ID or name of the (cluster)s to delete.')
+           help='ID or name of the (device)s to delete.')
 def do_device_delete(cs, args):
     """Delete specified device."""
-    for id in args.cluster:
+    for id in args.uuid:
         try:
-            cs.clusters.delete(id)
-            print("Request to delete cluster %s has been accepted." %
-                  id)
+            cs.device.delete(id=id)
+            print("Request to delete device %s successful." % id)
         except Exception as e:
             print("Delete for cluster %(cluster)s failed: %(e)s" %
                   {'cluster': id, 'e': e})
@@ -131,17 +120,9 @@ def do_device_delete(cs, args):
            help='The uuid of the device to show.')
 def do_device_show(cs, args):
     """Show details about the given device."""
-    cluster = cs.clusters.get(args.cluster)
-    if args.long:
-        cluster_template = \
-            cs.cluster_templates.get(cluster.cluster_template_id)
-        del cluster_template._info['links'], cluster_template._info['uuid']
-
-        for key in cluster_template._info:
-            if 'clustertemplate_' + key not in cluster._info:
-                cluster._info['clustertemplate_' + key] = \
-                    cluster_template._info[key]
-    _show_cluster(cluster)
+    device = cs.device.get(args.device_uuid)
+    LOG.debug("device data: %s" % device)
+    _show_cluster(device)
 
 
 @utils.arg('cluster', metavar='<cluster>', help="UUID or name of cluster")

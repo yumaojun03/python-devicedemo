@@ -52,7 +52,7 @@ class Manager(object):
     def _create(self, url, body):
         resp, body = self.api.json_request('POST', url, body=body)
         if body:
-            return self.resource_class(self, body)
+            return body
 
     def _format_body_data(self, body, response_key):
         if response_key:
@@ -131,6 +131,16 @@ class Manager(object):
         data = list(data[0].values())[0]
         objs = [obj_class(self, res, loaded=True) for res in data if data]
         return objs
+
+    def _get(self, url, response_key=None, obj_class=None, body=None):
+        resp, body = self.api.json_request('GET', url)
+
+        if obj_class is None:
+            obj_class = self.resource_class
+
+        data = self._format_body_data(body, response_key)
+        device = obj_class(self, data[0], loaded=True)
+        return device
 
     def _update(self, url, body, method='PATCH', response_key=None):
         resp, body = self.api.json_request(method, url, body=body)
