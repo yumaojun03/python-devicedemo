@@ -20,6 +20,12 @@ import os_client_config
 from devicedemoclient.common import httpclient
 from devicedemoclient.v1.api import device as v1_device
 
+import logging
+
+
+
+LOG = logging.getLogger(__name__)
+
 
 DEFAULT_SERVICE_TYPE = 'devicedemo'
 LEGACY_DEFAULT_SERVICE_TYPE = 'devicedemo'
@@ -52,6 +58,7 @@ def _load_service_type(session,
             service_name=service_name,
             interface=interface,
             region_name=region_name)
+        LOG.debug("%s, %s, %s, %s" % (service_type, service_name, interface, region_name))
     except catalog.EndpointNotFound:
         service_type = LEGACY_DEFAULT_SERVICE_TYPE
         try:
@@ -94,6 +101,21 @@ def _load_session_client(session=None, endpoint_override=None, username=None,
             timeout=timeout,
             **kwargs
         )
+        LOG.error("session: %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s" % (username,
+                                                                                       project_id,
+                                                                                       project_name,
+                                                                                       auth_url,
+                                                                                       password,
+                                                                                       auth_type,
+                                                                                       insecure,
+                                                                                       user_domain_id,
+                                                                                       user_domain_name,
+                                                                                       project_domain_id,
+                                                                                       project_domain_name,
+                                                                                       auth_token,
+                                                                                       timeout,
+                                                                                       kwargs) )
+        LOG.error("session:%s" % session.auth)
 
     if not endpoint_override:
         service_type = _load_service_type(

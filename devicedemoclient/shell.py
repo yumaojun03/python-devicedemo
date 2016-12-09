@@ -20,7 +20,7 @@ from devicedemoclient.i18n import _
 
 LATEST_API_VERSION = ('1', 'latest')
 DEFAULT_INTERFACE = 'public'
-DEFAULT_SERVICE_TYPE = 'container-infra'
+DEFAULT_SERVICE_TYPE = 'devicedemo'
 
 logger = logging.getLogger(__name__)
 
@@ -475,6 +475,7 @@ class DevicedemoShell(object):
             insecure=args.insecure,
             api_version=args.magnum_api_version,
         )
+
 
         args.func(self.cs, args)
 
